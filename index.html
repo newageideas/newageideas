@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Elia.PRO | Viral Intelligence</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              lyra: {
+                bg: '#0a192f',
+                card: '#112240',
+                surface: '#233554',
+                text: '#ccd6f6',
+                cyan: '#64ffda',
+                magenta: '#ff00ff',
+                blue: '#57cbff',
+              },
+              neon: {
+                cyan: '#00ffff',
+                magenta: '#ff00ff',
+                purple: '#a855f7',
+                green: '#10b981',
+              }
+            },
+            fontFamily: {
+              mono: ['SF Mono', 'Fira Code', 'Fira Mono', 'Roboto Mono', 'monospace'],
+              sans: ['Calibre', 'Inter', 'San Francisco', 'SF Pro Text', 'system-ui', 'sans-serif'],
+            },
+            animation: {
+              'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              'glow': 'glow 2s ease-in-out infinite alternate',
+              'scan': 'scan 2s linear infinite',
+            },
+            keyframes: {
+              glow: {
+                '0%': { boxShadow: '0 0 5px #00ffff' },
+                '100%': { boxShadow: '0 0 20px #00ffff, 0 0 10px #ff00ff' },
+              },
+              scan: {
+                '0%': { top: '0%' },
+                '50%': { top: '100%' },
+                '100%': { top: '0%' },
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Fira+Code:wght@400;600&display=swap');
+
+      body {
+        background-color: #0a192f;
+        color: #ccd6f6;
+        font-family: 'Inter', sans-serif;
+        overflow-x: hidden;
+      }
+      
+      /* Focus Mode / Neuro-Design Physics */
+      .focus-group:hover .focus-item:not(:hover) {
+        opacity: 0.5;
+        filter: grayscale(0.6);
+        transform: scale(0.98);
+      }
+      
+      .focus-item {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        backface-visibility: hidden;
+      }
+      
+      .focus-item:hover {
+        transform: scale(1.02);
+        z-index: 20;
+      }
+
+      /* Enhanced Glow Classes */
+      .hover-glow-text {
+        transition: text-shadow 0.3s ease;
+      }
+      .hover-glow-text:hover {
+        text-shadow: 0 0 15px currentColor;
+      }
+
+      .btn-glow {
+        position: relative;
+        overflow: hidden;
+      }
+      .btn-glow:hover {
+        box-shadow: 0 0 20px currentColor;
+        filter: brightness(1.2);
+      }
+      .btn-glow::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        opacity: 0;
+        transform: scale(0.5);
+        transition: opacity 0.3s, transform 0.3s;
+      }
+      .btn-glow:hover::after {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #0a192f; 
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #233554; 
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #64ffda; 
+      }
+
+      .text-glow-cyan {
+        text-shadow: 0 0 10px rgba(100, 255, 218, 0.5);
+      }
+      
+      .glass-panel {
+        background: rgba(17, 34, 64, 0.7);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(100, 255, 218, 0.1);
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "recharts": "https://aistudiocdn.com/recharts@^3.5.1",
+    "react/": "https://aistudiocdn.com/react@^19.2.1/",
+    "react": "https://aistudiocdn.com/react@^19.2.1",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.555.0"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
