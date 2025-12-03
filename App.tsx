@@ -1,20 +1,17 @@
-
 import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
-import { ScanAndScore } from './components/ScanAndScore';
+// Replace legacy ScanAndScore with the new ViralEngine
+import { ViralEngine } from './components/ViralEngine';
 import { TheLab } from './components/TheLab';
 import { CompetitorSpy } from './components/CompetitorSpy';
 import { BrandDNA } from './components/BrandDNA';
 import { UpgradeModal } from './components/UpgradeModal';
 import { Tab, LyraAnalysisResult, BrandSettings } from './types';
-import { analyzeMedia } from './services/geminiService';
 import { DEFAULT_PROFILE } from './constants';
 
 const App: React.FC = () => {
   const [currentTab, setCurrentTab] = useState<Tab>(Tab.SCAN_SCORE);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<LyraAnalysisResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   // Profile Management State
@@ -63,70 +60,29 @@ const App: React.FC = () => {
     }
   };
 
-  const handleAnalyze = async (file: File) => {
-    setIsAnalyzing(true);
-    setResult(null);
-    setError(null);
-    
-    // Convert to Base64
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = async () => {
-      try {
-        const base64String = reader.result as string;
-        const base64Data = base64String.split(',')[1];
-        
-        const data = await analyzeMedia(base64Data, file.type, activeSettings);
-        
-        // Simple check to see if we got valid data or if the service returned fallback error data
-        if (data.visuals.aesthetic === "Error" || data.score.breakdown === "Analysis Failed") {
-           throw new Error("Elia.PRO Engine returned incomplete data. The AI model might be overloaded.");
-        }
-
-        setResult(data);
-        
-        // Auto-switch to Lab after 1.5s delay for user to see the score first
-        setTimeout(() => {
-           setCurrentTab(Tab.THE_LAB);
-        }, 1500);
-      } catch (err: any) {
-        console.error("Analysis Failed", err);
-        const errorMessage = err instanceof Error ? err.message : "Connection Interrupted. Please check your internet.";
-        setError(errorMessage);
-        setIsAnalyzing(false);
-      } finally {
-        setIsAnalyzing(false);
-      }
-    };
-    reader.onerror = () => {
-      setError("Failed to read the file. Please try another image or video.");
-      setIsAnalyzing(false);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-lyra-bg text-white pb-20 selection:bg-neon-cyan selection:text-black font-sans">
       <Navbar 
         currentTab={currentTab} 
         onTabChange={setCurrentTab} 
-        disabled={isAnalyzing}
+        disabled={false} // ViralEngine handles its own loading state
         onUpgradeClick={() => setShowUpgradeModal(true)}
       />
 
       <main className="container max-w-6xl mx-auto px-4 pt-28">
         
-        {/* TAB 1: SCAN & SCORE */}
+        {/* TAB 1: VIRAL ENGINE (Formerly Scan & Score) */}
         <div className={currentTab === Tab.SCAN_SCORE ? 'block' : 'hidden'}>
-          <ScanAndScore 
-            isAnalyzing={isAnalyzing} 
-            result={result} 
-            onAnalyze={handleAnalyze} 
-            brandSettings={activeSettings}
-            error={error}
+          <ViralEngine 
+             brandSettings={activeSettings}
+             onAnalysisComplete={(res) => {
+                // ViralEngine displays its own results, but we can log or store them here if needed
+                console.log("Viral Analysis Complete:", res);
+             }}
           />
         </div>
 
-        {/* TAB 2: THE LAB */}
+        {/* TAB 2: THE LAB (Legacy view, optional) */}
         <div className={currentTab === Tab.THE_LAB ? 'block' : 'hidden'}>
            {result ? (
              <TheLab result={result} />
@@ -137,7 +93,7 @@ const App: React.FC = () => {
                 </div>
                 <p className="font-mono text-xl mb-4 text-gray-500">LAB_OFFLINE</p>
                 <button onClick={() => setCurrentTab(Tab.SCAN_SCORE)} className="text-neon-cyan hover:text-white underline font-mono tracking-wider transition-colors">
-                  INITIATE SCAN
+                  INITIATE SCAN IN VIRAL ENGINE
                 </button>
              </div>
            )}

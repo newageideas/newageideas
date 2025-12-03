@@ -20,13 +20,11 @@ export async function analyzeMedia(
   options?: { signal?: AbortSignal }
 ): Promise<LyraAnalysisResult | ViralResult> {
   
-  // Determine if we are in ViralEngine mode (4 args or 3rd arg is platform string)
   const isViralEngine = (typeof arg3 === 'string');
   const platform = isViralEngine ? (arg3 as 'TikTok' | 'Instagram') : undefined;
   const brandSettings = isViralEngine ? arg4 : (arg3 as BrandSettings | undefined);
   const musicMood = isViralEngine ? arg5 : undefined;
   
-  // Check for AbortSignal
   if (options?.signal?.aborted) {
     throw new DOMException('Aborted', 'AbortError');
   }
@@ -86,7 +84,6 @@ export async function analyzeMedia(
     }
     `;
   } else {
-    // Lyra/Elia Standard Analysis
     prompt = `
     Analyze this ${isVideo ? 'VIDEO' : 'IMAGE'} for Viral Potential.
 
@@ -121,7 +118,7 @@ export async function analyzeMedia(
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-3-pro-preview",
+      model: "gemini-2.5-flash",
       contents: {
         parts: [
           { inlineData: { data: base64Data, mimeType: mimeType } },
@@ -131,7 +128,7 @@ export async function analyzeMedia(
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,
         tools: [{ googleSearch: {} }],
-        thinkingConfig: { thinkingBudget: 16384 }, // Optimized budget for speed/quality balance
+        thinkingConfig: { thinkingBudget: 16384 },
       }
     });
     
@@ -143,8 +140,15 @@ export async function analyzeMedia(
     if (!text) throw new Error("Empty response from Elia Engine.");
 
     const cleanJson = (str: string) => {
-      const match = str.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
-      if (match) return match[1];
+      // Improved JSON extraction: Finds the LAST valid JSON block to avoid picking up Thinking/Planning blocks
+      const jsonBlockRegex = /```(?:json)?\s*(\{[\s\S]*?\})\s*```/g;
+      const matches = [...str.matchAll(jsonBlockRegex)];
+      
+      if (matches.length > 0) {
+        return matches[matches.length - 1][1]; // Return the last match
+      }
+
+      // Fallback: Find outermost braces
       const firstBrace = str.indexOf('{');
       const lastBrace = str.lastIndexOf('}');
       if (firstBrace !== -1 && lastBrace !== -1) {
@@ -156,9 +160,7 @@ export async function analyzeMedia(
     const parsed = JSON.parse(cleanJson(text));
     
     if (isViralEngine) {
-       // Validate structure to avoid UI crashes
        if (!parsed.variants || !parsed.variants.horror) throw new Error("Malformed Analysis Data");
-       // Ensure description exists (fallback if model missed it)
        ['horror', 'humor', 'historical'].forEach(k => {
           if (!parsed.variants[k].description) parsed.variants[k].description = `A ${k} themed viral post.`;
        });
@@ -173,7 +175,6 @@ export async function analyzeMedia(
     
     console.error("Elia Engine Error:", error);
     
-    // Graceful Fallback
     if (isViralEngine) {
        return {
          viralScore: 0,
@@ -187,7 +188,6 @@ export async function analyzeMedia(
          warnings: ["AI Model Overload - Try Again"]
        } as ViralResult;
     }
-    // Return empty standard result
     return {
       visuals: { aesthetic: "Error", colors: [], objects: [] },
       score: { total: 0, isAestheticTrending: false, isAudioRising: false, breakdown: "Service Unavailable" },
@@ -199,4 +199,4 @@ export async function analyzeMedia(
       warnings: ["Network Error"]
     } as LyraAnalysisResult;
   }
-};
+}
